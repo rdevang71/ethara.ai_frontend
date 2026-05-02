@@ -79,7 +79,7 @@ export default function ProfilePage() {
             ].map(item => (
               <div key={item.label} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'10px 0',borderBottom:'1px solid var(--border)'}}>
                 <span style={{fontSize:12,fontWeight:600,textTransform:'uppercase',letterSpacing:'.5px',color:'var(--text-muted)'}}>{item.label}</span>
-                <span style={{fontSize:13,color:'var(--text-secondary)',fontFamily: item.mono ? 'var(--font-mono)' : 'inherit', fontSize: item.mono ? 11 : 13}}>{item.value}</span>
+                <span style={{color:'var(--text-secondary)',fontFamily: item.mono ? 'var(--font-mono)' : 'inherit', fontSize: item.mono ? 11 : 13}}>{item.value}</span>
               </div>
             ))}
           </div>
