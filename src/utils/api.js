@@ -1,6 +1,15 @@
 import axios from 'axios';
 
-const base = import.meta.env.VITE_API_BASE || '/api';
+// Prefer VITE_API_URL (full backend base), fall back to VITE_API_BASE (legacy).
+const envUrl = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE;
+let base;
+if (envUrl) {
+  const trimmed = envUrl.replace(/\/$/, '');
+  base = trimmed.endsWith('/api') ? trimmed : `${trimmed}/api`;
+} else {
+  base = '/api';
+}
+
 const api = axios.create({ baseURL: base });
 
 api.interceptors.request.use((config) => {
