@@ -199,4 +199,100 @@ export default function MyTasksPage() {
                     <td><span className={`badge badge-${task.status}`}>{task.status}</span></td>
                     <td>
                       <div style={{display:'flex',alignItems:'center',gap:8,minWidth:80}}>
-                 
+                        <div className="progress-bar-wrap" style={{flex:1}}><div className="progress-bar-fill" style={{width:`${task.progress}%`}} /></div>
+                        <span style={{fontSize:11,fontWeight:600,color:'var(--text-primary)',minWidth:28}}>{task.progress}%</span>
+                      </div>
+                    </td>
+                    <td style={{fontSize:12,color: task.dueDate && new Date(task.dueDate) < new Date() ? 'var(--red)' : 'var(--text-muted)'}}>
+                      {task.dueDate ? new Date(task.dueDate).toLocaleDateString() : '—'}
+                    </td>
+                    <td>
+                      <div style={{display:'flex',gap:6}}>
+                        <button className="btn btn-ghost btn-sm" onClick={() => setEditTask(task)}>Update</button>
+                        {isAdmin && <button className="btn btn-danger btn-sm" onClick={() => handleDelete(task._id)}>Delete</button>}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {editTask && <UpdateModal task={editTask} onClose={() => setEditTask(null)} onSave={handleSave} isAdmin={isAdmin} projects={projects} users={users} />}
+
+      {newTaskModal && (
+        <NewTaskModal
+          projects={projects}
+          users={users}
+          onClose={() => setNewTaskModal(null)}
+          onSave={(data) => { handleCreate(data); setNewTaskModal(null); }}
+        />
+      )}
+    </div>
+  );
+}
+
+function NewTaskModal({ projects, users, onClose, onSave }) {
+  const [form, setForm] = useState({ title:'', description:'', project: projects[0]?._id || '', priority: 'medium', assignedTo:'', dueDate:'', status:'todo' });
+  const set = (k, v) => setForm(p => ({ ...p, [k]: v }));
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const { data } = await api.post('/tasks', form);
+      onSave(data);
+      toast.success('Task created');
+    } catch (err) { toast.error(err.response?.data?.message || 'Error'); }
+  };
+
+  return (
+    <div className="modal-overlay" onClick={e => e.target===e.currentTarget && onClose()}>
+      <div className="modal">
+        <div className="modal-header">
+          <h2 className="modal-title">New Task</h2>
+          <button className="modal-close" onClick={onClose}>×</button>
+        </div>
+        <form onSubmit={handleSubmit}>
+          <div className="modal-body">
+            <div className="form-group">
+              <label className="form-label">Title *</label>
+              <input className="form-input" value={form.title} onChange={e=>set('title',e.target.value)} required />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Project *</label>
+              <select className="form-select" value={form.project} onChange={e=>set('project',e.target.value)} required>
+                {projects.map(p => <option key={p._id} value={p._id}>{p.name}</option>)}
+              </select>
+            </div>
+            <div className="form-group">
+              <label className="form-label">Assign To</label>
+              <select className="form-select" value={form.assignedTo} onChange={e=>set('assignedTo',e.target.value)}>
+                <option value="">Unassigned</option>
+                {users.map(u => <option key={u._id} value={u._id}>{u.name}</option>)}
+              </select>
+            </div>
+            <div className="form-group">
+              <label className="form-label">Priority</label>
+              <select className="form-select" value={form.priority} onChange={e=>set('priority',e.target.value)}>
+                <option value="low">low</option>
+                <option value="medium">medium</option>
+                <option value="high">high</option>
+                <option value="critical">critical</option>
+              </select>
+            </div>
+            <div className="form-group">
+              <label className="form-label">Due Date</label>
+              <input className="form-input" type="date" value={form.dueDate?.slice(0,10)||''} onChange={e=>set('dueDate',e.target.value)} />
+            </div>
+          </div>
+          <div className="modal-footer">
+            <button type="button" className="btn btn-ghost" onClick={onClose}>Cancel</button>
+            <button type="submit" className="btn btn-primary">Create</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
